@@ -15,8 +15,8 @@ import (
 	corefilesystem "github.com/xtls/xray-core/common/platform/filesystem"
 	core "github.com/xtls/xray-core/core"
 	corestats "github.com/xtls/xray-core/features/stats"
-	coretun "github.com/xtls/xray-core/proxy/tun"
 	coreserial "github.com/xtls/xray-core/infra/conf/serial"
+	coretun "github.com/xtls/xray-core/proxy/tun"
 	_ "github.com/xtls/xray-core/main/distro/all"
 	browser_dialer "github.com/xtls/xray-core/transport/internet/browser_dialer"
 	mobasset "golang.org/x/mobile/asset"
@@ -128,6 +128,7 @@ func (x *CoreController) StopLoop() error {
 	x.coreMutex.Lock()
 	defer x.coreMutex.Unlock()
 
+	coretun.DisablePacketTap()
 	if x.IsRunning {
 		x.doShutdown()
 		x.CallbackHandler.Shutdown()
@@ -137,7 +138,7 @@ func (x *CoreController) StopLoop() error {
 }
 
 // EnablePacketTap starts bounded, non-blocking copies of packets read from Xray's TUN.
-// Capacity must be between 1 and 1024 packets. It is disabled by default.
+// Capacity must be between 1 and 128 packets. It is disabled by default.
 func EnablePacketTap(capacity int) bool {
 	return coretun.EnablePacketTap(capacity)
 }
