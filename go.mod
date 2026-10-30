@@ -59,4 +59,4 @@ require (
 	layeh.com/gopher-luar v1.0.11 // indirect
 	lukechampine.com/blake3 v1.4.1 // indirect
 )
-replace github.com/xtls/xray-core => github.com/eesanezhad76/Xray-core v0.0.0-20261030182043-92ce8ae8e2e2
+replace github.com/xtls/xray-core => github.com/eesanezhad76/Xray-core v0.0.0-20261030182430-ab155f2c57e4
