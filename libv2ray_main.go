@@ -15,6 +15,7 @@ import (
 	corefilesystem "github.com/xtls/xray-core/common/platform/filesystem"
 	core "github.com/xtls/xray-core/core"
 	corestats "github.com/xtls/xray-core/features/stats"
+	coretun "github.com/xtls/xray-core/proxy/tun"
 	coreserial "github.com/xtls/xray-core/infra/conf/serial"
 	_ "github.com/xtls/xray-core/main/distro/all"
 	browser_dialer "github.com/xtls/xray-core/transport/internet/browser_dialer"
@@ -28,7 +29,7 @@ const (
 	xudpBaseKey          = "xray.xudp.basekey"
 	tunFdKey             = "xray.tun.fd"
 	browserDialerAddress = "xray.browser.dialer"
-	libVersion           = 40 // Library version, update here only
+	libVersion           = 41 // Library version, update here only
 )
 
 // CoreController represents a controller for managing Xray core instance lifecycle
@@ -133,6 +134,27 @@ func (x *CoreController) StopLoop() error {
 		x.CallbackHandler.OnEmitStatus(0, "Core stopped")
 	}
 	return nil
+}
+
+// EnablePacketTap starts bounded, non-blocking copies of packets read from Xray's TUN.
+// Capacity must be between 1 and 1024 packets. It is disabled by default.
+func EnablePacketTap(capacity int) bool {
+	return coretun.EnablePacketTap(capacity)
+}
+
+// ReadPacketTap returns one copied raw IP packet, or nil when no packet is queued.
+func ReadPacketTap() []byte {
+	return coretun.ReadPacketTap()
+}
+
+// PacketTapDropped returns the number of observation copies dropped due to a full queue.
+func PacketTapDropped() int64 {
+	return int64(coretun.PacketTapDropped())
+}
+
+// DisablePacketTap stops packet observation and discards queued copies.
+func DisablePacketTap() {
+	coretun.DisablePacketTap()
 }
 
 // CheckVersionX returns the library and Xray versions
