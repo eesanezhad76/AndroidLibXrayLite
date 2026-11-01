@@ -46,6 +46,9 @@ jobs:
           --install "ndk;29.0.14206865"
         echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/29.0.14206865" >> $GITHUB_ENV
 
+    - name: Test passive packet tap
+      run: go test -race github.com/xtls/xray-core/proxy/tun
+
     - name: Build
       run: |
          mkdir -p assets data
