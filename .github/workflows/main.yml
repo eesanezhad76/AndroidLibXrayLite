@@ -12,6 +12,7 @@ on:
   push:
     branches:
       - main
+      - albion-passive-tap
 
 jobs:
   build:
@@ -44,6 +45,9 @@ jobs:
           --channel=0 \
           --install "ndk;29.0.14206865"
         echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/29.0.14206865" >> $GITHUB_ENV
+
+    - name: Test passive packet tap
+      run: go mod tidy && go test -race github.com/xtls/xray-core/proxy/tun
 
     - name: Build
       run: |

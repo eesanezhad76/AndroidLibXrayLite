@@ -16,6 +16,7 @@ import (
 	core "github.com/xtls/xray-core/core"
 	corestats "github.com/xtls/xray-core/features/stats"
 	coreserial "github.com/xtls/xray-core/infra/conf/serial"
+	coretun "github.com/xtls/xray-core/proxy/tun"
 	_ "github.com/xtls/xray-core/main/distro/all"
 	browser_dialer "github.com/xtls/xray-core/transport/internet/browser_dialer"
 	mobasset "golang.org/x/mobile/asset"
@@ -28,7 +29,7 @@ const (
 	xudpBaseKey          = "xray.xudp.basekey"
 	tunFdKey             = "xray.tun.fd"
 	browserDialerAddress = "xray.browser.dialer"
-	libVersion           = 40 // Library version, update here only
+	libVersion           = 42 // Library version, update here only
 )
 
 // CoreController represents a controller for managing Xray core instance lifecycle
@@ -127,12 +128,57 @@ func (x *CoreController) StopLoop() error {
 	x.coreMutex.Lock()
 	defer x.coreMutex.Unlock()
 
+	coretun.DisablePacketTap()
 	if x.IsRunning {
 		x.doShutdown()
 		x.CallbackHandler.Shutdown()
 		x.CallbackHandler.OnEmitStatus(0, "Core stopped")
 	}
 	return nil
+}
+
+// EnablePacketTap starts bounded, non-blocking copies of packets read from Xray's TUN.
+// Capacity must be between 1 and 4096 packets. It is disabled by default.
+func EnablePacketTap(capacity int) bool {
+	return coretun.EnablePacketTap(capacity)
+}
+
+// ReadPacketTap returns one copied raw IP packet, or nil when no packet is queued.
+func ReadPacketTap() []byte {
+	return coretun.ReadPacketTap()
+}
+
+// ResetPacketTap clears stale queued copies and the drop counter between capture sessions.
+// It succeeds only after the tap is disabled and the previous consumer has drained/stopped.
+func ResetPacketTap() bool {
+	return coretun.ResetPacketTap()
+}
+
+// PacketTapQueued returns the number of copied packets waiting for the consumer.
+func PacketTapQueued() int {
+	return coretun.PacketTapQueued()
+}
+
+// PacketTapCapacity returns the configured observation queue capacity.
+func PacketTapCapacity() int {
+	return coretun.PacketTapCapacity()
+}
+
+// PacketTapEnabled reports whether the tap currently accepts packet copies.
+func PacketTapEnabled() bool {
+	return coretun.PacketTapEnabled()
+}
+
+// PacketTapDropped returns the number of observation copies dropped due to queue contention,
+// a full queue, or a packet exceeding the supported IP packet size.
+func PacketTapDropped() int64 {
+	return int64(coretun.PacketTapDropped())
+}
+
+// DisablePacketTap stops observing new packets. Already queued copies remain readable
+// and should be drained with ReadPacketTap before enabling a new tap.
+func DisablePacketTap() {
+	coretun.DisablePacketTap()
 }
 
 // CheckVersionX returns the library and Xray versions
