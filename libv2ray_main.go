@@ -29,7 +29,7 @@ const (
 	xudpBaseKey          = "xray.xudp.basekey"
 	tunFdKey             = "xray.tun.fd"
 	browserDialerAddress = "xray.browser.dialer"
-	libVersion           = 41 // Library version, update here only
+	libVersion           = 42 // Library version, update here only
 )
 
 // CoreController represents a controller for managing Xray core instance lifecycle
@@ -146,6 +146,27 @@ func EnablePacketTap(capacity int) bool {
 // ReadPacketTap returns one copied raw IP packet, or nil when no packet is queued.
 func ReadPacketTap() []byte {
 	return coretun.ReadPacketTap()
+}
+
+// ResetPacketTap clears stale queued copies and the drop counter between capture sessions.
+// It succeeds only after the tap is disabled and the previous consumer has drained/stopped.
+func ResetPacketTap() bool {
+	return coretun.ResetPacketTap()
+}
+
+// PacketTapQueued returns the number of copied packets waiting for the consumer.
+func PacketTapQueued() int {
+	return coretun.PacketTapQueued()
+}
+
+// PacketTapCapacity returns the configured observation queue capacity.
+func PacketTapCapacity() int {
+	return coretun.PacketTapCapacity()
+}
+
+// PacketTapEnabled reports whether the tap currently accepts packet copies.
+func PacketTapEnabled() bool {
+	return coretun.PacketTapEnabled()
 }
 
 // PacketTapDropped returns the number of observation copies dropped due to queue contention,
