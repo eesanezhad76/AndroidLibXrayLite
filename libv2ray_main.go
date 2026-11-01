@@ -138,7 +138,7 @@ func (x *CoreController) StopLoop() error {
 }
 
 // EnablePacketTap starts bounded, non-blocking copies of packets read from Xray's TUN.
-// Capacity must be between 1 and 128 packets. It is disabled by default.
+// Capacity must be between 1 and 4096 packets. It is disabled by default.
 func EnablePacketTap(capacity int) bool {
 	return coretun.EnablePacketTap(capacity)
 }
@@ -148,12 +148,14 @@ func ReadPacketTap() []byte {
 	return coretun.ReadPacketTap()
 }
 
-// PacketTapDropped returns the number of observation copies dropped due to a full queue.
+// PacketTapDropped returns the number of observation copies dropped due to queue contention,
+// a full queue, or a packet exceeding the supported IP packet size.
 func PacketTapDropped() int64 {
 	return int64(coretun.PacketTapDropped())
 }
 
-// DisablePacketTap stops packet observation and discards queued copies.
+// DisablePacketTap stops observing new packets. Already queued copies remain readable
+// and should be drained with ReadPacketTap before enabling a new tap.
 func DisablePacketTap() {
 	coretun.DisablePacketTap()
 }
